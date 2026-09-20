@@ -1,0 +1,70 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":rebaseStalePrs"
+  ],
+  "reviewers": ["martinfrancois"],
+  "labels": ["dependencies"],
+  "automergeType": "pr",
+  "ignoreTests": false,
+  "internalChecksFilter": "strict",
+  "minimumReleaseAge": "7 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "statusCheckWhen": {
+    "minimumReleaseAge": "never"
+  },
+  "pinDigests": true,
+  "platformAutomerge": false,
+  "rangeStrategy": "pin",
+  "dependencyDashboardApproval": false,
+  "prConcurrentLimit": 0,
+  "branchConcurrentLimit": 0,
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "separateMinorPatch": false,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "minimumReleaseAge": null,
+    "schedule": [],
+    "updateNotScheduled": true,
+    "groupName": null,
+    "groupSlug": null
+  },
+  "lockFileMaintenance": {
+    "description": "Re-resolves uv.lock so transitive packages pick up upstream fixes that no direct-dependency rule reaches. Not automerged: uv has no package-manager-level release-age gate, so nothing holds back a package published yesterday when the lock file is rebuilt, and a human reads the diff instead.",
+    "enabled": true,
+    "schedule": ["* 0-4 * * 5"],
+    "automerge": false
+  },
+  "customManagers": [
+    {
+      "description": "Renovate itself, pinned in the workflow step that validates this file.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": ["--package renovate@(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "renovate",
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Merge eligible non-major updates after checks pass; keep unrelated dependencies separate. The strict visual regression in CI is what makes this safe: a layout change of a single pixel fails the check and leaves the pull request for a human.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["build-system.requires"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["major update"]
+    }
+  ]
+}
