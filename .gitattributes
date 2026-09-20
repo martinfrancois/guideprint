@@ -1,0 +1,11 @@
+*.md text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+*.typ text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ttf binary
