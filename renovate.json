@@ -48,6 +48,15 @@
       "depNameTemplate": "renovate",
       "datasourceTemplate": "npm",
       "versioningTemplate": "semver"
+    },
+    {
+      "description": "pnpm, activated by Corepack for the workflow step that validates this file. This repository has no package.json, so no built-in manager reads that version.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": ["corepack prepare pnpm@(?<currentValue>\\d+\\.\\d+\\.\\d+) --activate"],
+      "depNameTemplate": "pnpm",
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "semver"
     }
   ],
   "packageRules": [
