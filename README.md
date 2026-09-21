@@ -24,7 +24,7 @@ pipx install git+https://github.com/martinfrancois/guideprint
 
 ## Use
 
-In Notesnook, export the note (or the notebook) as Markdown with attachments.
+In Notesnook, export the note (or the notebook) as Markdown with frontmatter.
 That gives you a zip. Then:
 
 ```sh
