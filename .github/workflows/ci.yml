@@ -32,12 +32,12 @@ jobs:
           corepack enable
           corepack prepare pnpm@12.4.1 --activate
       - name: Validate the Renovate configuration
-        # pnpm refuses to finish while a dependency still has an unbuilt build script, and the
-        # Renovate CLI brings four of them. re2 is the one that matters: without its native
-        # binding the validator falls back to JavaScript regular expressions and reports that
-        # regex validation may be inaccurate, which is exactly what the custom manager in
-        # renovate.json depends on. The other three are named only because pnpm stops for them.
-        # A Renovate release that adds another such package fails this step and names it.
+        # re2 has to build. Without its native binding the validator falls back to JavaScript
+        # regular expressions and says regex validation may be inaccurate, which is exactly what
+        # the custom managers in renovate.json rely on, and it still exits 0, so nothing here
+        # would catch it. The other three are named only because pnpm 12.4 stops the run while
+        # any build script is unbuilt. pnpm 12.5 downgraded that to a warning, so once the pin
+        # above moves past 12.4 those three can go and only re2 needs to stay.
         run: >-
           pnpm dlx --allow-build=re2 --allow-build=core-js-pure
           --allow-build=dtrace-provider --allow-build=protobufjs
