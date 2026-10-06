@@ -71,6 +71,12 @@
       "rangeStrategy": "bump"
     },
     {
+      "description": "requires-python says which Python versions guideprint supports, not which one to install, so the repository-wide rangeStrategy pin does not fit it. Pinning turned >=3.12 into ==3.14.8, which made uv reject the Python 3.13 that .python-version selects and would make pip refuse guideprint on any other Python. replace keeps the declared range and only rewrites it when a release falls outside it.",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["requires-python"],
+      "rangeStrategy": "replace"
+    },
+    {
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["major update"]
