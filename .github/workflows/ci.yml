@@ -41,7 +41,7 @@ jobs:
         run: >-
           pnpm dlx --allow-build=re2 --allow-build=core-js-pure
           --allow-build=dtrace-provider --allow-build=protobufjs
-          --package renovate@44.126.1 renovate-config-validator --strict renovate.json
+          --package renovate@44.128.0 renovate-config-validator --strict renovate.json
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
