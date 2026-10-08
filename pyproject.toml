@@ -32,7 +32,7 @@ dev = [
   "pikepdf==10.16.0",
   "pymupdf==1.28.2",
   "pytest==9.1.1",
-  "ruff==0.16.9",
+  "ruff==0.16.10",
   "types-pyyaml==6.0.12.20260906",
 ]
 
