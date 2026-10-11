@@ -30,7 +30,7 @@ jobs:
       - name: Enable pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@12.9.0 --activate
+          corepack prepare pnpm@12.9.1 --activate
       - name: Validate the Renovate configuration
         # re2 has to build. Without its native binding the validator falls back to JavaScript
         # regular expressions and says regex validation may be inaccurate, which is exactly what
