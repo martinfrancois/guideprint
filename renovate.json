@@ -36,7 +36,7 @@
   "lockFileMaintenance": {
     "description": "Re-resolves uv.lock so transitive packages pick up upstream fixes that no direct-dependency rule reaches. Not automerged: uv has no package-manager-level release-age gate, so nothing holds back a package published yesterday when the lock file is rebuilt, and a human reads the diff instead.",
     "enabled": true,
-    "schedule": ["* 0-4 * * 5"],
+    "schedule": ["* * * * 5"],
     "automerge": false
   },
   "customManagers": [
