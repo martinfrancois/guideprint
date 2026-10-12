@@ -35,7 +35,7 @@ jobs:
     # requests elsewhere.
     if: >-
       github.event_name == 'workflow_dispatch'
-      || (github.event.pull_request.user.login == 'renovate[bot]'
+      || (contains(fromJSON('["renovate[bot]", "martinfrancois"]'), github.event.pull_request.user.login)
           && contains(github.event.pull_request.labels.*.name, 'security')
           && endsWith(github.event.pull_request.head.ref, '-vulnerability'))
     runs-on: ubuntu-24.04
