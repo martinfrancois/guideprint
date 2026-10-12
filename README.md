@@ -212,6 +212,17 @@ fixed versions:
 gh workflow run security-cooldown-exception.yml -f pull-request=123 -f packages="iniconfig==2.3.1"
 ```
 
+The workflow runs every `uv lock` with `--no-build`, because the job then
+holds a token that can push: a source distribution's build is code from the
+new release, and it could change the files the job commits. A fix published
+only as an sdist therefore fails the workflow. Add the entry on the pull
+request branch by hand instead:
+
+```sh
+python tools/uv_cooldown.py exempt iniconfig==2.3.1 --reason "security fix, <pull request URL>"
+uv lock --upgrade-package iniconfig==2.3.1
+```
+
 This is a workaround until Renovate writes these entries itself, tracked in
 [#40](https://github.com/martinfrancois/guideprint/issues/40).
 

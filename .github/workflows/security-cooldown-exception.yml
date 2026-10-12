@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prepare:
+  exempt:
     # Renovate authorship plus the label plus the branch topic, so a hand-made pull request that
     # adds a young pin is never exempted on its own. The label alone matched unrelated pull
     # requests elsewhere.
@@ -43,10 +43,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    outputs:
-      head-ref: ${{ steps.pr.outputs.head-ref }}
-      head-sha: ${{ steps.pr.outputs.head-sha }}
-    # No secrets in this job: uv lock may build sdists, which runs code from the new release.
+    # Whatever ends up in the pushed commit is written here by uv and tools/uv_cooldown.py, and
+    # by nothing else: every uv call passes --no-build, so no code from a package runs, and the App
+    # key only reaches the step that creates the token, after the files are final.
     steps:
       - name: Resolve the pull request
         id: pr
@@ -71,12 +70,12 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - name: Add exceptions for fixed versions younger than the cooldown
+        id: exempt
         env:
           BASE_SHA: ${{ steps.pr.outputs.base-sha }}
           PR_URL: ${{ steps.pr.outputs.url }}
           PACKAGES: ${{ inputs.packages }}
         run: |
-          : > "$RUNNER_TEMP/exception.patch"
           if [ -n "$PACKAGES" ]; then
             read -r -a fixes <<< "$PACKAGES"
           else
@@ -91,35 +90,21 @@ jobs:
           python3 -I tools/uv_cooldown.py exempt "${fixes[@]}" --reason "security fix, $PR_URL"
           upgrades=()
           for fix in "${fixes[@]}"; do upgrades+=(--upgrade-package "$fix"); done
-          uv lock "${upgrades[@]}"
-          uv lock --check
-          git diff --binary > "$RUNNER_TEMP/exception.patch"
+          # A fix that ships only as an sdist fails here. Lock it by hand; see the README.
+          uv lock --no-build "${upgrades[@]}"
+          uv lock --no-build --check
+          files=$(git diff --name-only | sort | tr '\n' ' ')
+          if [ -z "$files" ]; then echo "nothing to add"; exit 0; fi
+          test "$files" = "pyproject.toml uv.lock " || { echo "unexpected files: $files"; exit 1; }
+          if python3 -I tools/uv_cooldown.py same-versions <(git show HEAD:uv.lock) uv.lock 2>/dev/null; then
+            echo "the exception changes no locked version, refusing"; exit 1
+          fi
           git diff --stat
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: exception-patch
-          path: ${{ runner.temp }}/exception.patch
-          if-no-files-found: error
-          retention-days: 1
-
-  push:
-    needs: prepare
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    # Builds and installs nothing: it applies a patch limited to two files, checks it, and pushes.
-    steps:
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: exception-patch
-          path: ${{ runner.temp }}
-      - name: Stop when there is nothing to add
-        id: patch
-        run: |
-          if [ -s "$RUNNER_TEMP/exception.patch" ]; then echo "apply=true" >> "$GITHUB_OUTPUT"; fi
+          echo "push=true" >> "$GITHUB_OUTPUT"
       # A push with GITHUB_TOKEN would not start CI on the new commit, so the required check would
-      # never report and Renovate would never automerge. The app's token does start it.
+      # never report and Renovate would never automerge. The App's token does start it.
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        if: steps.patch.outputs.apply
+        if: steps.exempt.outputs.push
         id: app
         with:
           # GitHub accepts the numeric app ID wherever it takes the client ID when signing the
@@ -127,31 +112,19 @@ jobs:
           client-id: ${{ vars.COOLDOWN_APP_ID }}
           private-key: ${{ secrets.COOLDOWN_APP_PRIVATE_KEY }}
           permission-contents: write
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: steps.patch.outputs.apply
-        with:
-          ref: ${{ needs.prepare.outputs.head-ref }}
-          token: ${{ steps.app.outputs.token }}
-      - name: Apply, verify, push
-        if: steps.patch.outputs.apply
+      - name: Commit and push
+        if: steps.exempt.outputs.push
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
-          HEAD_SHA: ${{ needs.prepare.outputs.head-sha }}
-          HEAD_REF: ${{ needs.prepare.outputs.head-ref }}
+          HEAD_REF: ${{ steps.pr.outputs.head-ref }}
           APP_SLUG: ${{ steps.app.outputs.app-slug }}
         run: |
-          # The branch may have moved since prepare ran; the run that the move started redoes this.
-          test "$(git rev-parse HEAD)" = "$HEAD_SHA" || { echo "branch moved, skipping"; exit 0; }
-          files=$(git apply --numstat "$RUNNER_TEMP/exception.patch" | cut -f3 | sort | tr '\n' ' ')
-          test "$files" = "pyproject.toml uv.lock " || { echo "unexpected files: $files"; exit 1; }
-          git apply "$RUNNER_TEMP/exception.patch"
-          if python3 -I tools/uv_cooldown.py same-versions <(git show HEAD:uv.lock) uv.lock 2>/dev/null; then
-            echo "the patch changes no locked version, refusing"; exit 1
-          fi
           # Renovate's gitIgnoredAuthors holds this address, so Renovate keeps managing the branch.
           user_id=$(gh api "users/${APP_SLUG}%5Bbot%5D" --jq .id)
           git -c user.name="${APP_SLUG}[bot]" \
             -c user.email="${user_id}+${APP_SLUG}[bot]@users.noreply.github.com" \
             commit -q -am "Exempt the security fix from the uv cooldown"
           git show --stat HEAD
-          git push origin "HEAD:$HEAD_REF"
+          # Not a force push: if the branch moved since the checkout, this fails and the run the
+          # move started redoes the work.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${HEAD_REF}"
