@@ -183,6 +183,38 @@ you intend, run `uv run python tools/visual_regression.py approve`, look at
 the change that caused them. `check` never writes the baseline, and a
 missing baseline is a failure, not a skip.
 
+### Release-age cooldown
+
+`[tool.uv] exclude-newer = "7 days"` in `pyproject.toml` keeps every file
+uploaded in the last seven days out of any lock uv makes, including
+Renovate's weekly lock file maintenance. A security fix should not wait that
+long. When Renovate raises a security pull request (label `security`, branch
+ending in `-vulnerability`) whose fixed version is younger than the cooldown,
+`.github/workflows/security-cooldown-exception.yml` adds an entry for it to
+`[tool.uv.exclude-newer-package]` with `tools/uv_cooldown.py`, re-locks, and
+pushes the result to the pull request. It pushes with a GitHub App's token
+(repository variable `COOLDOWN_APP_ID`, secret `COOLDOWN_APP_PRIVATE_KEY`),
+because a push made with the workflow's own token would not start CI. The
+App's commit email is in `gitIgnoredAuthors` in `renovate.json`, so Renovate
+still treats the branch as its own and keeps rebasing and automerging it.
+
+The entry admits the fixed version and nothing uploaded after it, and has to
+go once it is a cooldown old, because until then it holds the package at
+that version. `uv_cooldown.py prune` removes matured entries; the scheduled
+prune in [dependency-watchdog](https://github.com/martinfrancois/dependency-watchdog)
+opens a pull request for them.
+
+For a security fix Renovate did not raise, or a transitive one with no pin
+to compare, run the workflow by hand with the pull request's number and the
+fixed versions:
+
+```sh
+gh workflow run security-cooldown-exception.yml -f pull-request=123 -f packages="iniconfig==2.3.1"
+```
+
+This is a workaround until Renovate writes these entries itself, tracked in
+[#40](https://github.com/martinfrancois/guideprint/issues/40).
+
 ## License
 
 MIT. The bundled Inter font is under the SIL Open Font License, see

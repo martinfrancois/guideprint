@@ -40,6 +40,16 @@ dev = [
 requires = ["hatchling==1.32.4"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+# Release-age cooldown for every resolution uv makes, including Renovate's
+# lockFileMaintenance, which Renovate's own minimumReleaseAge does not cover.
+exclude-newer = "7 days"
+
+[tool.uv.exclude-newer-package]
+# Security fixes younger than the cooldown, each capped at the upload time of
+# its fixed version. tools/uv_cooldown.py writes and prunes these entries; see
+# its docstring before editing by hand.
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/guideprint"]
 
