@@ -6,6 +6,7 @@
     ":rebaseStalePrs"
   ],
   "reviewers": ["martinfrancois"],
+  "gitIgnoredAuthors": ["341491776+martinfrancois-uv-cooldown[bot]@users.noreply.github.com"],
   "labels": ["dependencies"],
   "automergeType": "pr",
   "ignoreTests": false,
@@ -34,7 +35,7 @@
     "groupSlug": null
   },
   "lockFileMaintenance": {
-    "description": "Re-resolves uv.lock so transitive packages pick up upstream fixes that no direct-dependency rule reaches. Not automerged: uv has no package-manager-level release-age gate, so nothing holds back a package published yesterday when the lock file is rebuilt, and a human reads the diff instead.",
+    "description": "Re-resolves uv.lock so transitive packages pick up upstream fixes that no direct-dependency rule reaches. Renovate's minimumReleaseAge does not apply to this refresh, because Renovate hands it to uv; uv's own gate, exclude-newer = \"7 days\" in pyproject.toml, keeps every file uploaded in the last seven days out of the refreshed lock. Not automerged: a human reads the diff.",
     "enabled": true,
     "schedule": ["* * * * 5"],
     "automerge": false
