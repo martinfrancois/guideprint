@@ -50,6 +50,9 @@ exclude-newer = "7 days"
 # its fixed version. tools/uv_cooldown.py writes and prunes these entries; see
 # its docstring before editing by hand.
 
+# ruff 0.17.0: security fix, https://github.com/martinfrancois/guideprint/pull/43. Prune after 2026-10-16T19:47:30Z.
+ruff = "2026-10-09T19:47:30Z"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/guideprint"]
 
