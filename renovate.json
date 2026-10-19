@@ -5,7 +5,6 @@
     "helpers:pinGitHubActionDigests",
     ":rebaseStalePrs"
   ],
-  "reviewers": ["martinfrancois"],
   "gitIgnoredAuthors": ["341491776+martinfrancois-uv-cooldown[bot]@users.noreply.github.com"],
   "labels": ["dependencies"],
   "automergeType": "pr",
