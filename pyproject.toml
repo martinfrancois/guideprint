@@ -15,7 +15,7 @@ classifiers = [
 ]
 dependencies = [
   "markdown-it-py==4.2.0",
-  "pillow==12.3.0",
+  "pillow==13.0.0",
   "python-frontmatter==1.3.0",
   "typst==0.15.0",
 ]
