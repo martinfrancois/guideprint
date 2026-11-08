@@ -77,6 +77,12 @@
       "rangeStrategy": "replace"
     },
     {
+      "description": "Hold Python 3.15 in .python-version until onnxruntime publishes cp315 wheels. pymupdf 2.0 depends on onnxruntime, which ships wheels only and none for 3.15 yet, so uv cannot install the locked environment on 3.15. Remove this rule, and the README note on 3.15, once tests/test_upstream_workarounds.py fails; the steps are in https://github.com/martinfrancois/guideprint/issues/124.",
+      "matchManagers": ["pyenv"],
+      "matchPackageNames": ["python"],
+      "allowedVersions": "<3.15"
+    },
+    {
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["major update"]

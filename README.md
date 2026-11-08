@@ -14,7 +14,9 @@ those rules and leaves the writing to Notesnook.
 ## Install
 
 Python 3.12 or newer. The Typst compiler and the Inter font ship inside the
-package, nothing else is needed.
+package, nothing else is needed. Python 3.15 does not work yet, because PyMuPDF
+needs onnxruntime and onnxruntime has no wheels for 3.15 so far, see
+[#124](https://github.com/martinfrancois/guideprint/issues/124).
 
 ```sh
 uv tool install git+https://github.com/martinfrancois/guideprint
