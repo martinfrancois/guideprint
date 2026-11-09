@@ -35,9 +35,9 @@ jobs:
         # re2 has to build. Without its native binding the validator falls back to JavaScript
         # regular expressions and says regex validation may be inaccurate, which is exactly what
         # the custom managers in renovate.json rely on, and it still exits 0, so nothing here
-        # would catch it. The other three are named only because pnpm 12.4 stops the run while
-        # any build script is unbuilt. pnpm 12.5 downgraded that to a warning, so once the pin
-        # above moves past 12.4 those three can go and only re2 needs to stay.
+        # would catch it. The other three are allowed only to keep the log clean: without them
+        # pnpm prints "Ignored build scripts: core-js-pure, dtrace-provider, protobufjs", and
+        # `pnpm dlx` has no flag that declines a build quietly.
         run: >-
           pnpm dlx --allow-build=re2 --allow-build=core-js-pure
           --allow-build=dtrace-provider --allow-build=protobufjs
