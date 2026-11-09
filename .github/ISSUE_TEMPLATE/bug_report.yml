@@ -1,0 +1,31 @@
+name: Bug report
+description: Report something that doesn't work as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Leave out passwords, private paths and personal data, also from exports, PDFs, logs and screenshots.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The command you ran and a small Notesnook export that shows the problem, with placeholder text and pictures instead of your own.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: guideprint commit, operating system, Python version, and anything else that matters here.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output or logs
+      render: text
